@@ -1,0 +1,6 @@
+{
+  "name": "ERP Enterprise & Sistema Contable Integral",
+  "description": "Sistema ERP empresarial completo e interconectado con motor contable, inventario, ventas, compras, caja, bancos y estados financieros automáticos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
