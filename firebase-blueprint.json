@@ -1,0 +1,159 @@
+{
+  "entities": {
+    "Company": {
+      "title": "Company",
+      "description": "Enterprise company configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "razonSocial": { "type": "string" },
+        "nombreComercial": { "type": "string" },
+        "ruc": { "type": "string" },
+        "direccion": { "type": "string" },
+        "telefono": { "type": "string" },
+        "correo": { "type": "string" },
+        "pais": { "type": "string" },
+        "moneda": { "type": "string" },
+        "regimenTributario": { "type": "string" },
+        "estado": { "type": "string" }
+      },
+      "required": ["id", "razonSocial", "ruc"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "docType": { "type": "string" },
+        "docNumber": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "creditLimit": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "docNumber"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Supplier entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "docType": { "type": "string" },
+        "docNumber": { "type": "string" },
+        "contact": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "paymentTerms": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "name", "docNumber"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sku": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "brand": { "type": "string" },
+        "unit": { "type": "string" },
+        "buyPrice": { "type": "number" },
+        "sellPrice": { "type": "number" },
+        "cost": { "type": "number" },
+        "stock": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "sku", "name", "stock"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Sale entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "customerId": { "type": "string" },
+        "documentNumber": { "type": "string" },
+        "subtotal": { "type": "number" },
+        "tax": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "user": { "type": "string" }
+      },
+      "required": ["id", "total", "customerId"]
+    },
+    "Purchase": {
+      "title": "Purchase",
+      "description": "Purchase entity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "documentNumber": { "type": "string" },
+        "subtotal": { "type": "number" },
+        "tax": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "user": { "type": "string" }
+      },
+      "required": ["id", "total", "supplierId"]
+    },
+    "JournalEntry": {
+      "title": "JournalEntry",
+      "description": "Accounting journal entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "number": { "type": "string" },
+        "glosa": { "type": "string" },
+        "status": { "type": "string" },
+        "user": { "type": "string" }
+      },
+      "required": ["id", "number", "glosa"]
+    }
+  },
+  "firestore": {
+    "/companies/{companyId}": {
+      "schema": { "$ref": "#/entities/Company" },
+      "description": "Company profile"
+    },
+    "/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/Customer" },
+      "description": "Customers collection"
+    },
+    "/suppliers/{supplierId}": {
+      "schema": { "$ref": "#/entities/Supplier" },
+      "description": "Suppliers collection"
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Products collection"
+    },
+    "/sales/{saleId}": {
+      "schema": { "$ref": "#/entities/Sale" },
+      "description": "Sales collection"
+    },
+    "/purchases/{purchaseId}": {
+      "schema": { "$ref": "#/entities/Purchase" },
+      "description": "Purchases collection"
+    },
+    "/journalEntries/{entryId}": {
+      "schema": { "$ref": "#/entities/JournalEntry" },
+      "description": "Journal entries collection"
+    }
+  }
+}

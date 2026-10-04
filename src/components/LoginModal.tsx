@@ -1,36 +1,64 @@
 import React, { useState } from 'react';
-import { User } from '../types/erp';
-import { Lock, User as UserIcon, ShieldCheck, Building2 } from 'lucide-react';
+import { User as FirebaseUser } from '../types/erp';
+import { auth, googleProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../firebase';
+import { Lock, User as UserIcon, ShieldCheck, Building2, Mail, Chrome } from 'lucide-react';
 
 interface LoginModalProps {
-  users: User[];
-  onLogin: (user: User) => void;
+  users?: any[];
+  onLogin: (user: any) => void;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin }) => {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+export const LoginModal: React.FC<LoginModalProps> = ({ onLogin }) => {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        onLogin(data.user);
+      let resUser;
+      if (isSignUp) {
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        resUser = credential.user;
       } else {
-        setError(data.error || 'Credenciales incorrectas');
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        resUser = credential.user;
       }
-    } catch (err) {
-      setError('Error de conexión con el servidor');
+      onLogin({
+        id: resUser.uid,
+        username: resUser.email?.split('@')[0] || 'usuario',
+        name: resUser.displayName || resUser.email || 'Usuario ERP',
+        role: 'Administrador',
+        email: resUser.email,
+        active: true
+      });
+    } catch (err: any) {
+      setError(err.message || 'Error de autenticación');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const credential = await signInWithPopup(auth, googleProvider);
+      const resUser = credential.user;
+      onLogin({
+        id: resUser.uid,
+        username: resUser.email?.split('@')[0] || 'google_user',
+        name: resUser.displayName || 'Usuario Google',
+        role: 'Administrador',
+        email: resUser.email,
+        active: true
+      });
+    } catch (err: any) {
+      setError(err.message || 'Error con Google Sign-In');
     } finally {
       setLoading(false);
     }
@@ -46,7 +74,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin }) => {
             <Building2 className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">ERP Enterprise & Contabilidad</h1>
-          <p className="text-slate-400 text-sm mt-1">Sistema Integrado de Gestión Empresarial</p>
+          <p className="text-slate-400 text-sm mt-1">Firebase Auth: {isSignUp ? 'Registro de Cuenta' : 'Iniciar Sesión'}</p>
         </div>
 
         {error && (
@@ -55,20 +83,35 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin }) => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full mb-6 bg-white hover:bg-slate-100 text-slate-900 font-medium py-3 rounded-xl transition duration-200 shadow-lg flex items-center justify-center space-x-3 text-sm"
+        >
+          <Chrome className="w-5 h-5 text-blue-600" />
+          <span>Continuar con Google</span>
+        </button>
+
+        <div className="relative flex py-2 items-center mb-6">
+          <div className="flex-grow border-t border-slate-800"></div>
+          <span className="flex-shrink mx-4 text-slate-500 text-xs uppercase font-semibold">o con correo</span>
+          <div className="flex-grow border-t border-slate-800"></div>
+        </div>
+
+        <form onSubmit={handleEmailAuth} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Usuario</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Correo Electrónico</label>
             <div className="relative">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                <UserIcon className="w-4 h-4" />
+                <Mail className="w-4 h-4" />
               </span>
               <input
-                type="text"
+                type="email"
                 required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-                placeholder="admin"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 text-sm"
+                placeholder="usuario@empresa.pe"
               />
             </div>
           </div>
@@ -84,7 +127,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin }) => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 text-sm"
                 placeholder="••••••••"
               />
             </div>
@@ -94,24 +137,27 @@ export const LoginModal: React.FC<LoginModalProps> = ({ users, onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-medium py-3 rounded-xl transition duration-200 shadow-lg shadow-blue-600/20 flex items-center justify-center space-x-2 text-sm"
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition duration-200 shadow-lg shadow-blue-600/20 flex items-center justify-center space-x-2 text-sm"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Iniciar Sesión Segura</span>
+                  <span>{isSignUp ? 'Registrar Cuenta' : 'Iniciar Sesión'}</span>
                 </>
               )}
             </button>
           </div>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-          <p className="text-xs text-slate-500">
-            Usuarios predeterminados: <span className="text-slate-300 font-mono">admin / admin123</span> o <span className="text-slate-300 font-mono">contador / cont123</span>
-          </p>
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-xs text-blue-400 hover:underline font-medium"
+          >
+            {isSignUp ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate aquí'}
+          </button>
         </div>
       </div>
     </div>
